@@ -94,10 +94,14 @@ asset-api/
 **[SCREENSHOT 1.1]** — GET /assets/stats
 > Vào http://localhost:8080/docs → click GET /assets/stats → Try it out → Execute
 > Chụp phần "Server response" hiển thị JSON có `total`, `by_type`, `by_status`
-![Stats](Bài _1.1.png)
+
+![Stats](Bài_1.1.png)
+
 **[SCREENSHOT 1.2]** — GET /assets/count?type=domain
 > Click GET /assets/count → Try it out → điền `type = domain` → Execute
 > Chụp phần response hiển thị `count` và `filters`
+
+![Stats](Bài_1.2.png)
 
 ---
 
@@ -129,6 +133,9 @@ self._storage.batch_create(validated)
 > ```
 > Chụp response 201 có `created: 2` và `ids`
 
+![Stats](Bài_2.1(1).png)
+![Stats](Bài_2.1(2).png)
+
 **[SCREENSHOT 2.2]** — Error case (all or nothing)
 > Dùng body có 1 asset type sai:
 > ```json
@@ -136,6 +143,8 @@ self._storage.batch_create(validated)
 > ```
 > Chụp response 400 — chứng minh không asset nào được tạo
 
+![Stats](Bài_2.2(1).png)
+![Stats](Bài_2.2(2).png)
 ---
 
 ## Bài 3: Batch Delete Assets (20 điểm)
@@ -151,9 +160,14 @@ self._storage.batch_create(validated)
 > DELETE /assets/batch → Try it out → điền `ids` = các ID thật lấy từ bài 2 + thêm `fake-id-999`
 > Chụp response: `{"deleted": 2, "not_found": 1}`
 
+![Stats](Bài_3.1(1).png)
+![Stats](Bài_3.1(2).png)
+
 **[SCREENSHOT 3.2]** — Verify đã xóa
 > GET /assets/{asset_id} → điền 1 ID vừa xóa → Execute
 > Chụp response 404 Not Found
+
+![Stats](Bài_3.2.png)
 
 ---
 
@@ -183,6 +197,8 @@ Khi nhiều request đến cùng lúc, `threading.Lock()` đảm bảo:
 **[SCREENSHOT 4.1]** — Trước khi bắn concurrent
 > GET /assets/count → Execute → chụp count hiện tại (ví dụ: 5)
 
+![Stats](Bài_4.1.png)
+
 **[SCREENSHOT 4.2]** — Chạy test concurrent trong PowerShell
 > Mở PowerShell mới (KHÔNG phải terminal đang chạy server), chạy:
 > ```powershell
@@ -195,8 +211,12 @@ Khi nhiều request đến cùng lúc, `threading.Lock()` đảm bảo:
 > ```
 > Chụp màn hình đang chạy (thấy 20 dòng response)
 
+![Stats](Bài_4.2.png)
+
 **[SCREENSHOT 4.3]** — Sau khi bắn concurrent
 > GET /assets/count → Execute → chụp count tăng thêm đúng 20
+
+![Stats](Bài_4.3.png)
 
 ---
 
@@ -213,9 +233,14 @@ Khi nhiều request đến cùng lúc, `threading.Lock()` đảm bảo:
 > GET /health → Try it out → Execute
 > Chụp response có `status: ok`, `asset_count`, `uptime_seconds`, `timestamp`
 
+![Stats](Bài_5.1.png)
+
 **[SCREENSHOT 5.2]** — Health check sau khi tạo thêm asset
 > Tạo thêm 1 asset bằng POST /assets
 > Rồi GET /health lại → chụp — thấy `asset_count` tăng lên 1
+
+![Stats](Bài_5.2(1).png)
+![Stats](Bài_5.2(2).png)
 
 ---
 
@@ -232,10 +257,15 @@ Khi nhiều request đến cùng lúc, `threading.Lock()` đảm bảo:
 > GET /assets → Try it out → điền `page=1`, `limit=2` → Execute
 > Chụp response có `data` và `pagination` object
 
+![Stats](Bài_6.1(1).png)
+![Stats](Bài_6.1(2).png)
+
 **[SCREENSHOT 6.2]** — Filter kết hợp
 > GET /assets → điền `type=domain`, `status=active` → Execute
 > Chụp response chỉ hiển thị assets đúng filter
 
+![Stats](Bài_6.2(1).png)
+![Stats](Bài_6.2(2).png)
 ---
 
 ## Bài 7: Search by Name (10 điểm) — BONUS
@@ -257,10 +287,14 @@ def search_by_name(self, query: str) -> list[Asset]:
 > GET /assets/search → Try it out → điền `q = .com` → Execute
 > Chụp response trả về các asset có ".com" trong tên
 
+![Stats](Bài_7.1(1).png)
+![Stats](Bài_7.1(2).png)
+
 **[SCREENSHOT 7.2]** — Search case-insensitive
 > Điền `q = DOMAIN` hoặc `q = IP` (chữ hoa) → Execute
 > Chụp response vẫn tìm được kết quả
 
+![Stats](Bài_7.2.png)
 ---
 
 ## Ghi chú về Git

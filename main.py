@@ -5,6 +5,9 @@ import time
 from storage.postgres_asset_storage import PostgresAssetStorage
 from service.asset_service import AssetService
 import handler.asset_handler as asset_handler
+from storage.scan_storage import ScanJobStorage
+from service.scan_service import ScanService
+import handler.scan_handler as scan_handler
 
 # Ghi lại thời điểm server khởi động - dùng cho Bài 5
 START_TIME = time.time()
@@ -18,7 +21,11 @@ asset_handler.set_service(service)
 
 # Đăng ký các routes từ handler
 app.include_router(asset_handler.router)
+scan_storage = ScanJobStorage()
+scan_service = ScanService(scan_storage, storage)
+scan_handler.set_service(scan_service)
 
+app.include_router(scan_handler.router)
 # ========== Bài 5: Health Check ==========
 @app.get("/health")
 def health_check():

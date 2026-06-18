@@ -39,7 +39,7 @@ def health_check():
     return {
         "status": "ok",
         "storage": {
-            "type": "in-memory",
+            "type": "postgresql",
             "asset_count": service.get_asset_count(),
         },
         "uptime_seconds": uptime,

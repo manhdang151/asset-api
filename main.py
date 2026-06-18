@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from datetime import datetime, timezone
 import time
 
-from storage.asset_storage import AssetStorage
+from storage.postgres_asset_storage import PostgresAssetStorage
 from service.asset_service import AssetService
 import handler.asset_handler as asset_handler
 
@@ -12,7 +12,7 @@ START_TIME = time.time()
 app = FastAPI(title="Asset API")
 
 # === Wire up: storage → service → handler ===
-storage = AssetStorage()
+storage = PostgresAssetStorage()
 service = AssetService(storage)
 asset_handler.set_service(service)
 

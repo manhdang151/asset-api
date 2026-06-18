@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from datetime import datetime, timezone
 import time
 
@@ -13,7 +14,12 @@ import handler.scan_handler as scan_handler
 START_TIME = time.time()
 
 app = FastAPI(title="Asset API")
-
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=["*"],
+)
 # === Wire up: storage → service → handler ===
 storage = PostgresAssetStorage()
 service = AssetService(storage)

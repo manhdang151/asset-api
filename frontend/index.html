@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>Asset Dashboard</title>
+<style>
+  :root {
+    --bg: #0f1115;
+    --panel: #161922;
+    --panel-2: #1d212c;
+    --border: #2a2f3a;
+    --text: #e6e8ec;
+    --text-dim: #8b92a3;
+    --accent: #4f8cff;
+    --accent-dim: #2c4a87;
+    --green: #3ecf8e;
+    --red: #ef5e5e;
+    --yellow: #e3b341;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+  }
+  header {
+    padding: 20px 32px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  header h1 {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0;
+  }
+  #health-badge {
+    font-size: 13px;
+    color: var(--text-dim);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--text-dim);
+  }
+  .dot.ok { background: var(--green); }
+  .dot.bad { background: var(--red); }
+
+  main {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 32px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+  }
+  .panel h2 {
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-dim);
+    margin: 0 0 16px;
+  }
+  .full { grid-column: 1 / -1; }
+
+  form { display: flex; gap: 8px; flex-wrap: wrap; }
+  input, select {
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 8px 10px;
+    border-radius: 6px;
+    font-size: 13px;
+  }
+  input[type="text"] { flex: 1; min-width: 140px; }
+  button {
+    background: var(--accent);
+    color: white;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+    font-weight: 500;
+  }
+  button:hover { background: var(--accent-dim); }
+  button.danger { background: transparent; color: var(--red); border: 1px solid var(--red); }
+  button.danger:hover { background: rgba(239,94,94,0.1); }
+  button.ghost { background: transparent; color: var(--accent); border: 1px solid var(--accent-dim); }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { text-align: left; color: var(--text-dim); font-weight: 500; padding: 8px 6px; border-bottom: 1px solid var(--border); }
+  td { padding: 8px 6px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .badge.domain { background: rgba(79,140,255,0.15); color: var(--accent); }
+  .badge.ip { background: rgba(62,207,142,0.15); color: var(--green); }
+  .badge.service { background: rgba(227,179,65,0.15); color: var(--yellow); }
+  .badge.active { background: rgba(62,207,142,0.15); color: var(--green); }
+  .badge.inactive { background: rgba(139,146,163,0.15); color: var(--text-dim); }
+  .badge.completed { background: rgba(62,207,142,0.15); color: var(--green); }
+  .badge.failed { background: rgba(239,94,94,0.15); color: var(--red); }
+  .badge.pending, .badge.running { background: rgba(227,179,65,0.15); color: var(--yellow); }
+
+  .stat-row { display: flex; gap: 24px; }
+  .stat { flex: 1; }
+  .stat .num { font-size: 28px; font-weight: 700; }
+  .stat .label { font-size: 12px; color: var(--text-dim); }
+
+  .empty { color: var(--text-dim); font-size: 13px; padding: 12px 0; text-align: center; }
+
+  pre {
+    background: var(--panel-2);
+    border-radius: 6px;
+    padding: 12px;
+    font-size: 12px;
+    overflow-x: auto;
+    max-height: 240px;
+    margin: 0;
+    color: var(--text-dim);
+  }
+  .row-actions { display: flex; gap: 6px; }
+  .row-actions button { padding: 4px 8px; font-size: 12px; }
+  .scan-select { width: 90px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Asset Dashboard</h1>
+  <div id="health-badge"><span class="dot"></span><span>checking...</span></div>
+</header>
+
+<main>
+
+  <div class="panel">
+    <h2>Thống kê</h2>
+    <div class="stat-row" id="stats">
+      <div class="stat"><div class="num">–</div><div class="label">Tổng assets</div></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Thêm asset mới</h2>
+    <form id="create-form">
+      <input type="text" id="new-name" placeholder="ví dụ: example.com" required>
+      <select id="new-type">
+        <option value="domain">domain</option>
+        <option value="ip">ip</option>
+        <option value="service">service</option>
+      </select>
+      <button type="submit">Thêm</button>
+    </form>
+  </div>
+
+  <div class="panel full">
+    <h2>Danh sách Assets</h2>
+    <table>
+      <thead>
+        <tr><th>Tên</th><th>Loại</th><th>Trạng thái</th><th>Scan</th><th></th></tr>
+      </thead>
+      <tbody id="asset-list">
+        <tr><td colspan="5" class="empty">Đang tải...</td></tr>
+      </tbody>
+    </table>
+    <div id="pagination" style="display:flex; justify-content:space-between; align-items:center; margin-top:14px; font-size:13px; color:var(--text-dim);"></div>
+  </div>
+
+  <div class="panel full" id="results-panel" style="display:none;">
+    <h2>Kết quả Scan</h2>
+    <pre id="results-output"></pre>
+  </div>
+
+</main>
+
+<script>
+const API = "http://localhost:8080";
+
+async function checkHealth() {
+  const badge = document.getElementById("health-badge");
+  try {
+    const res = await fetch(`${API}/health`);
+    const data = await res.json();
+    badge.innerHTML = `<span class="dot ok"></span><span>online · ${data.storage.asset_count} assets</span>`;
+  } catch {
+    badge.innerHTML = `<span class="dot bad"></span><span>offline</span>`;
+  }
+}
+
+async function loadStats() {
+  const res = await fetch(`${API}/assets/stats`);
+  const data = await res.json();
+  document.getElementById("stats").innerHTML = `
+    <div class="stat"><div class="num">${data.total}</div><div class="label">Tổng assets</div></div>
+    <div class="stat"><div class="num">${data.by_type.domain || 0}</div><div class="label">Domain</div></div>
+    <div class="stat"><div class="num">${data.by_type.ip || 0}</div><div class="label">IP</div></div>
+  `;
+}
+
+let currentPage = 1;
+const PAGE_SIZE = 5;
+
+async function loadAssets() {
+  const res = await fetch(`${API}/assets?page=${currentPage}&limit=${PAGE_SIZE}`);
+  const data = await res.json();
+  const tbody = document.getElementById("asset-list");
+
+  if (!data.data || data.data.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="5" class="empty">Chưa có asset nào. Thêm asset đầu tiên ở form bên trên.</td></tr>`;
+  } else {
+    tbody.innerHTML = data.data.map(a => `
+      <tr>
+        <td>${a.name}</td>
+        <td><span class="badge ${a.type}">${a.type}</span></td>
+        <td><span class="badge ${a.status}">${a.status}</span></td>
+        <td>
+          <select class="scan-select" id="scan-type-${a.id}">
+            ${a.type === "domain" ? '<option value="dns">dns</option>' : '<option value="ip">ip</option>'}
+          </select>
+        </td>
+        <td class="row-actions">
+          <button class="ghost" onclick="startScan('${a.id}')">Scan</button>
+          <button class="danger" onclick="deleteAsset('${a.id}')">Xóa</button>
+        </td>
+      </tr>
+    `).join("");
+  }
+
+  renderPagination(data.pagination);
+}
+
+function renderPagination(p) {
+  const el = document.getElementById("pagination");
+  if (!p || p.total_pages <= 1) { el.innerHTML = ""; return; }
+
+  el.innerHTML = `
+    <span>Trang ${p.page} / ${p.total_pages} · ${p.total} assets</span>
+    <div style="display:flex; gap:8px;">
+      <button class="ghost" ${p.page <= 1 ? "disabled" : ""} onclick="goToPage(${p.page - 1})">← Trước</button>
+      <button class="ghost" ${p.page >= p.total_pages ? "disabled" : ""} onclick="goToPage(${p.page + 1})">Sau →</button>
+    </div>
+  `;
+}
+
+function goToPage(page) {
+  currentPage = page;
+  loadAssets();
+}
+
+async function createAsset(e) {
+  e.preventDefault();
+  const name = document.getElementById("new-name").value;
+  const type = document.getElementById("new-type").value;
+
+  await fetch(`${API}/assets`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name, type })
+  });
+
+  document.getElementById("new-name").value = "";
+  refreshAll();
+}
+
+async function deleteAsset(id) {
+  await fetch(`${API}/assets/batch?ids=${id}`, { method: "DELETE" });
+  refreshAll();
+}
+
+async function startScan(assetId) {
+  const scanType = document.getElementById(`scan-type-${assetId}`).value;
+  const res = await fetch(`${API}/assets/${assetId}/scan`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ scan_type: scanType })
+  });
+  const job = await res.json();
+
+  const resultsRes = await fetch(`${API}/scan-jobs/${job.id}/results`);
+  const results = await resultsRes.json();
+
+  document.getElementById("results-panel").style.display = "block";
+  document.getElementById("results-output").textContent = JSON.stringify(results, null, 2);
+  document.getElementById("results-panel").scrollIntoView({ behavior: "smooth" });
+}
+
+function refreshAll() {
+  checkHealth();
+  loadStats();
+  loadAssets();
+}
+
+document.getElementById("create-form").addEventListener("submit", createAsset);
+refreshAll();
+setInterval(checkHealth, 10000);
+</script>
+
+</body>
+</html>

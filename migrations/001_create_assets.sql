@@ -8,3 +8,5 @@ CREATE TABLE IF NOT EXISTS assets (
 
 CREATE INDEX IF NOT EXISTS idx_assets_type   ON assets(type);
 CREATE INDEX IF NOT EXISTS idx_assets_status ON assets(status);
+ALTER TABLE assets ADD COLUMN IF NOT EXISTS tags TEXT[] DEFAULT '{}';
+CREATE INDEX IF NOT EXISTS idx_assets_tags ON assets USING GIN (tags);

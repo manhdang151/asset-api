@@ -3,6 +3,11 @@ from storage.scan_storage import ScanJobStorage
 from storage.postgres_asset_storage import PostgresAssetStorage
 from scanners.dns_scanner import scan_dns
 from scanners.ip_scanner import scan_ip
+from scanners.whois_scanner import scan_whois
+from scanners.ssl_scanner import scan_ssl
+from scanners.certificate_scanner import scan_certificate
+from scanners.port_scanner import scan_port
+from scanners.technical_scanner import scan_technical
 from datetime import datetime, timezone
 
 
@@ -12,7 +17,6 @@ class ScanService:
         self._asset_storage = asset_storage
 
     def start_scan(self, asset_id: str, scan_type: str) -> ScanJob:
-        """Tạo job mới, validate, rồi chạy scan ngay (đơn giản hóa, không dùng queue)"""
         if scan_type not in VALID_SCAN_TYPES:
             raise ValueError(f"invalid scan_type '{scan_type}', must be one of: {', '.join(VALID_SCAN_TYPES)}")
 
@@ -22,14 +26,11 @@ class ScanService:
 
         job = new_scan_job(asset_id, scan_type)
         self._scan_storage.create(job)
-
-        # Chạy scan ngay (đồng bộ, đơn giản hóa so với queue thực tế)
         self._run_scan(job, asset.name)
 
         return job
 
     def _run_scan(self, job: ScanJob, target: str) -> None:
-        """Thực thi scan thật, cập nhật status và results vào job"""
         job.status = "running"
         job.started_at = datetime.now(timezone.utc)
         self._scan_storage.update(job)
@@ -39,6 +40,16 @@ class ScanService:
                 result = scan_dns(target)
             elif job.scan_type == "ip":
                 result = scan_ip(target)
+            elif job.scan_type == "whois":
+                result = scan_whois(target)
+            elif job.scan_type == "ssl":
+                result = scan_ssl(target)
+            elif job.scan_type == "certificate":
+                result = scan_certificate(target)
+            elif job.scan_type == "port":
+                result = scan_port(target)
+            elif job.scan_type == "technical":
+                result = scan_technical(target)
             else:
                 raise NotImplementedError(f"scan_type '{job.scan_type}' chưa được implement")
 

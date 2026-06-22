@@ -3,7 +3,7 @@ from typing import Optional, Any
 from datetime import datetime, timezone
 import uuid
 
-VALID_SCAN_TYPES = {"dns", "whois", "subdomain", "cert_trans", "asn", "all", "ip", "port"}
+VALID_SCAN_TYPES = {"dns", "whois", "subdomain", "cert_trans", "asn", "all", "ip", "port", "ssl", "certificate", "technical"}
 VALID_SCAN_STATUSES = {"pending", "running", "completed", "failed", "partial"}
 
 

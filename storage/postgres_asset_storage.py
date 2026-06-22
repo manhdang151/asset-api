@@ -28,18 +28,18 @@ class PostgresAssetStorage:
 
     def create(self, asset: Asset) -> None:
         query = """
-            INSERT INTO assets (id, name, type, status, created_at)
-            VALUES (%s, %s, %s, %s, %s)
+            INSERT INTO assets (id, name, type, status, tags, created_at)
+            VALUES (%s, %s, %s, %s, %s, %s)
         """
         with self._conn.cursor() as cur:
-            cur.execute(query, (asset.id, asset.name, asset.type, asset.status, asset.created_at))
+            cur.execute(query, (asset.id, asset.name, asset.type, asset.status, asset.tags, asset.created_at))
 
     def batch_create(self, assets: list[Asset]) -> None:
         query = """
-            INSERT INTO assets (id, name, type, status, created_at)
-            VALUES (%s, %s, %s, %s, %s)
+            INSERT INTO assets (id, name, type, status, tags, created_at)
+            VALUES (%s, %s, %s, %s, %s, %s)
         """
-        values = [(a.id, a.name, a.type, a.status, a.created_at) for a in assets]
+        values = [(a.id, a.name, a.type, a.status, a.tags, a.created_at) for a in assets]
         with self._conn.cursor() as cur:
             cur.executemany(query, values)
 

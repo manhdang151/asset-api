@@ -1,24 +1,37 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from datetime import datetime, timezone
 import time
 
-from storage.asset_storage import AssetStorage
+from storage.postgres_asset_storage import PostgresAssetStorage
 from service.asset_service import AssetService
 import handler.asset_handler as asset_handler
+from storage.scan_storage import ScanJobStorage
+from service.scan_service import ScanService
+import handler.scan_handler as scan_handler
 
 # Ghi lại thời điểm server khởi động - dùng cho Bài 5
 START_TIME = time.time()
 
 app = FastAPI(title="Asset API")
-
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=["*"],
+)
 # === Wire up: storage → service → handler ===
-storage = AssetStorage()
+storage = PostgresAssetStorage()
 service = AssetService(storage)
 asset_handler.set_service(service)
 
 # Đăng ký các routes từ handler
 app.include_router(asset_handler.router)
+scan_storage = ScanJobStorage()
+scan_service = ScanService(scan_storage, storage)
+scan_handler.set_service(scan_service)
 
+app.include_router(scan_handler.router)
 # ========== Bài 5: Health Check ==========
 @app.get("/health")
 def health_check():
@@ -26,7 +39,7 @@ def health_check():
     return {
         "status": "ok",
         "storage": {
-            "type": "in-memory",
+            "type": "postgresql",
             "asset_count": service.get_asset_count(),
         },
         "uptime_seconds": uptime,
